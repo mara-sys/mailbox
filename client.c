@@ -145,6 +145,7 @@ static int mbox_canaan_message_copy_received(struct file *filp, int chan_index, 
     }
 
     ret = copy_to_user((char *)arg, client_dev->rx_buffer[chan_index], MBOX_MAX_MSG_LEN);
+    mbox_data_ready = false;
     if (ret) 
         return -EFAULT;
     
@@ -238,6 +239,18 @@ static int mbox_canaan_client_release(struct inode *inode, struct file *filp)
     return 0;
 }
 
+static bool mbox_canaan_data_ready(struct mbox_canaan_client_device *client_dev)
+{
+    bool data_ready;
+    unsigned long flags;
+
+	spin_lock_irqsave(&client_dev->lock, flags);
+	data_ready = mbox_data_ready;
+	spin_unlock_irqrestore(&client_dev->lock, flags);
+
+	return data_ready;
+}
+
 static long mbox_canaan_client_ioctl(struct file *filp, unsigned int cmd, 
                                     unsigned long arg)
 {
@@ -299,12 +312,26 @@ static long mbox_canaan_client_ioctl(struct file *filp, unsigned int cmd,
     return 0;
 }
 
+static __poll_t
+mbox_canaan_client_poll(struct file *filp, struct poll_table_struct *wait)
+{
+    struct mbox_canaan_client_device *client_dev = filp->private_data;
+
+    poll_wait(filp, &client_dev->waitq, wait);
+
+    if (mbox_canaan_data_ready(client_dev))
+        return EPOLLIN | EPOLLRDNORM;
+
+    return 0;
+}
+
 static struct file_operations canaan_client_fops = {
     .owner          = THIS_MODULE,
     .open           = mbox_canaan_client_open,
     .release        = mbox_canaan_client_release,
     .unlocked_ioctl = mbox_canaan_client_ioctl,
     .fasync         = mbox_canaan_message_fasync,
+    .poll           = mbox_canaan_client_poll,
 };
 
 static int create_module_class(struct mbox_canaan_client_device *client_dev)
