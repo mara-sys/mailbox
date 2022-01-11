@@ -173,7 +173,7 @@ static void mbox_canaan_receive_message(struct mbox_client *client, void *messag
     mbox_data_ready = true;
     spin_unlock_irqrestore(&client_dev->lock, flags);
 
-    // wake_up_interruptible
+    wake_up_interruptible(&client_dev->waitq);
     kill_fasync(&client_dev->async_queue, SIGIO, POLL_IN);
 }
 
@@ -236,6 +236,7 @@ static int mbox_canaan_client_open(struct inode *inode, struct file *filp)
 static int mbox_canaan_client_release(struct inode *inode, struct file *filp)
 {
     mbox_canaan_message_fasync(-1, filp, 0);
+    mbox_data_ready = false;
     return 0;
 }
 
