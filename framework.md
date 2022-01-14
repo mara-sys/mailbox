@@ -1,3 +1,19 @@
+# mailbox
+```shell
+# 文档
+Documentation
+    -->mailbox.txt #client 和 controller 驱动开发说明
+    devicetree/bindings/mailbox/
+                                -->mailbox.txt #设备树绑定说明
+# 代码
+include/linux/
+    -->mailbox_controller.h 
+    -->mailbox_client.h
+drivers/mailbox/
+    -->mailbox.h
+    -->mailbox.c
+    -->mailbox-test.c #client driver test
+```
 ## 13.1 框架分析
 ### 13.1.1 client、controller 与 framework
 &emsp;&emsp;mailbox 框架用于处理多处理器之间的通信。框架分为 controller 与 client。  
