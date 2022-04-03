@@ -14,6 +14,8 @@ drivers/mailbox/
     -->mailbox.c
     -->mailbox-test.c #client driver test
 ```
+[toc]
+
 ## 13.1 框架分析
 ### 13.1.1 client、controller 与 framework
 &emsp;&emsp;mailbox 框架用于处理多处理器之间的通信。框架分为 controller 与 client。  
